@@ -1,0 +1,45 @@
+version: "3"
+
+services:
+  rabbitmq:
+    image: rabbitmq:management-alpine
+    tty: true
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq # Persistent volume for RabbitMQ data
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER} # Set default RabbitMQ user
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS} # Set default RabbitMQ password
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+
+  mysql:
+    image: mysql:latest
+    container_name: mysql
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASS}
+      MYSQL_DATABASE: ${MYSQL_SCHEMA}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    environment:
+      PMA_HOST: mysql
+      PMA_USER: ${MYSQL_USER}
+      PMA_PASSWORD: ${MYSQL_PASS}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASS}
+    ports:
+      - "8080:80"
+    depends_on:
+      - mysql
+
+volumes:
+  rabbitmq_data:
+    driver: local
+  mysql_data:
+    driver: local
